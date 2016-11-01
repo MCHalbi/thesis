@@ -1,0 +1,3 @@
+# Exclude LaTeX binaries
+*.log
+*.aup
