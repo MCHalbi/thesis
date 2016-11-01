@@ -3,3 +3,10 @@
 *.out
 *.toc
 *.aux
+
+# Exclude archives
+*.tar.gz
+*.zip
+
+# Exclude DispFlowNe Folder
+DispFlowNet/
