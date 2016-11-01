@@ -1,0 +1,32 @@
+\documentclass[a4paper, titlepage]{scrartcl}
+% Deutsche Sonderzeichen etc.
+\usepackage[german]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{german}
+% Zus‰tzliche mathematische Symbole
+\usepackage{amssymb}
+% Einbinden von Grafiken
+\usepackage{graphicx}
+% Kopf- und Fuﬂzeile
+\usepackage{fancyhdr}
+\usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\pagestyle{fancy}
+
+% Definition der Kopf- und Fuﬂzeile
+\rhead{\leftmark}
+\chead{}
+\lhead{\title}
+\cfoot{Seite \thepage}
+
+\title{Bachelorthesis}
+\author{Lukas Halbritter}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+\section{Einleitung}\label{abstract}
+  \input{./chapters/chapter_sample.tex}
+\end{document}

@@ -1,3 +1,5 @@
 # Exclude LaTeX binaries
 *.log
 *.aup
+*.out
+*.toc
