@@ -8,5 +8,6 @@
 *.tar.gz
 *.zip
 
-# Exclude DispFlowNe Folder
+# Exclude some folders
 DispFlowNet/
+CUDA/
