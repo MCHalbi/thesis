@@ -9,5 +9,4 @@
 *.zip
 
 # Exclude some folders
-DispFlowNet/
 CUDA/
