@@ -8,6 +8,10 @@
 *.tar.gz
 *.zip
 
+# Exclude swap files
+*~
+
 # Exclude some folders
 dispflownet-release/
 usr/
+cuda/
