@@ -10,8 +10,10 @@
 
 # Exclude swap files
 *~
+*.swp
 
 # Exclude some folders
 dispflownet-release/
 usr/
 cuda/
+src/include/

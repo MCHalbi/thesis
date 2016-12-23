@@ -1,6 +1,6 @@
 # Compiling parameters
 FILE       = filter
-INCLUDE    = /misc/student/halbritl/CImg
+INCLUDE    = /usr/local/include
 LIBS       = -lpthread -lX11 -lm -L/usr/X11R6/lib
 FLAGS      = -Wall -std=c++11
 

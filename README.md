@@ -1,3 +1,2 @@
-### Bachelorthesis - Lukas Halbritter
-
-Nothing to see here ...
+Concerning the include folder in src:
+Add some softlinks to this folder, if you need any resources like CImg.

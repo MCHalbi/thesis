@@ -1,1 +1,0 @@
-/misc/student/halbritl/CImg/CImg.h
