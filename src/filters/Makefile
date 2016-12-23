@@ -24,3 +24,4 @@ clean:
 	rm -f *.o
 	rm -f $(FILE)Main
 	rm -f core
+	rm -f *.png
