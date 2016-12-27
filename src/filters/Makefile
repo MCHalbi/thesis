@@ -1,8 +1,31 @@
-# Compiling parameters
-FILE       = filter
-INCLUDE    = /usr/local/include
-LIBS       = -lpthread -lX11 -lm -L/usr/X11R6/lib
-FLAGS      = -Wall -std=c++11
+FILE = filter
+
+# Compiler and linker you want to use
+CC = g++
+LD = g++
+
+# Location of the linter for style checking
+LINT = ../cpplint.py
+
+# Additional include directorys. Whatever you think you need goes here
+INCLUDE = /home/halbritl/Dokumente/thesis/src/include
+LIBS = -L/usr/X11R6/lib
+
+# Linker flags you want to use go here
+LDFLAGS = -lpthread -lX11 -lm
+
+# Set warnings to be displayed
+WARNINGS = -Wall
+
+# Set language standard
+STD = c++11
+
+# Files to be removed by make clean
+RM = *.o \
+     *.png \
+     $(FILE)Main \
+     core
+
 
 all: compile checkstyle
 
@@ -10,18 +33,15 @@ compile: $(FILE)Main
 
 # Link
 %Main: %Main.o %.o
-	g++ $(FLAGS) -I $(INCLUDE) -o $@ $^ $(LIBS)
+	$(LD) -I $(INCLUDE) -o $@ $^ $(LIBS) $(LDFLAGS) $(WARNINGS) -std=$(STD)
 
 # Compile
 %.o: %.cpp
-	g++ $(FLAGS) -I $(INCLUDE) -g -c $^
+	$(CC) -I $(INCLUDE) -g -c $^ -std=$(STD) $(WARNINGS)
 
 checkstyle:
-	python ../cpplint.py *.cpp *.h
+	python $(LINT) *.cpp *.h
 
 # Delete binarys and object files
 clean:
-	rm -f *.o
-	rm -f $(FILE)Main
-	rm -f core
-	rm -f *.png
+	rm -f $(RM)

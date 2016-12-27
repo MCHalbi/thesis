@@ -10,6 +10,8 @@ using cimg_library::CImg;
 
 class Filter {
  public:
+  enum Color {RED, GREEN, BLUE};
+
   // Constructor
   Filter();
 
@@ -28,6 +30,16 @@ class Filter {
   static void bayerGrayscale(const CImg<unsigned char>& input,
     CImg<unsigned char>* output);
 
+  // Generate a grayscale image as an bayer filter would generate it on an
+  // image sensor. The size of the bayer pattern can be choosen.
+  // params: input - An RGB input image
+  //         output - Reference to the filtered grayscale image
+  //         patternSize - The grid size of the bayer filter. This parameter
+  //           specifies the size of one field in the pattern, not of one GRBG
+  //           field group
+  static void bayerGrayscale(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output, const int patternSize);
+
   // Generate a rgb image as you would gain it from coloring an bayer filtered
   // grayscale image.
   // params: input - An RGB input image
@@ -35,16 +47,20 @@ class Filter {
   static void bayerColor(const CImg<unsigned char>& input,
     CImg<unsigned char>* output);
 
-  enum Color {RED, GREEN, BLUE};
+  // Downsample an rgb image.
+  // params: input - Reference to the image you want to rescale
+  //         ouput - Pointer to the object where your new image will be saved.
+  //           The input will be downsampled to the size of this CImg object
+  static void downsample(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output);
 
  private:
-  // Get the filter color of a bayer filter for an given image at a given
-  // position
-  // params: input - An input image
-  //         x - The x-value of the pixel you want to know the color of
-  //         y - The y-value of the pixel you want to know the color of
-  static Filter::Color getBayerPixelColor(const CImg<unsigned char>& input,
-    int x, int y);
+  // Get the filter color of a bayer filter at a given position
+  // params: x - The x-value of the filter field of which you want to know the
+  //           color
+  //         y - The y-value of the filter field of which you want to know the
+  //           color
+  static Filter::Color getBayerPixelColor(int x, int y);
 };
 
 #endif  // SRC_FILTERS_FILTER_H_

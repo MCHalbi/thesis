@@ -7,29 +7,18 @@ using cimg_library::CImg;
 using cimg_library::CImgDisplay;
 
 int main() {
-  const CImg<unsigned char> image("../../image/lena1.png");
-  CImg<unsigned char> resultGrayscale(512, 512, 1, 3, 0),
-    resultColor(512, 512, 1, 3, 0), resultPattern(512, 512, 1, 3, 0);
+  const CImg<unsigned char> image("../../image/original/lena1.png");
+  CImg<unsigned char> result1(256, 256, 1, 3, 0), result2(500, 500, 1, 3, 0);
 
-  Filter::bayerGrayscale(image, &resultGrayscale);
-  Filter::bayerColor(image, &resultColor);
-  Filter::bayerArtifacts(image, &resultPattern);
+  Filter::downsample(image, &result1);
+  Filter::downsample(image, &result2);
 
-  CImgDisplay originalDisp(image, "Original"),
-    resultGrayscaleDisp(resultGrayscale, "Filtered Image"),
-    resultColorDisp(resultColor, "Filtered Color Image"),
-    resultPatternDisp(resultPattern, "Image with artifacts");
+  CImgDisplay result1Disp(result1, "result1 (256 x 256)"),
+    result2Disp(result2, "result2 (500 x 500)");
 
-  resultGrayscale.save("./filtered.png");
-  resultColor.save("./filteredColor.png");
-  resultPattern.save("./withArtifacts.png");
-
-  while (!originalDisp.is_closed() || !resultGrayscaleDisp.is_closed() ||
-    !resultColorDisp.is_closed() || !resultPatternDisp.is_closed()) {
-    originalDisp.wait();
-    resultGrayscaleDisp.wait();
-    resultColorDisp.wait();
-    resultPatternDisp.wait();
+  while (!result1Disp.is_closed() || !result2Disp.is_closed()) {
+    result1Disp.wait();
+    result2Disp.wait();
   }
 
   return EXIT_SUCCESS;

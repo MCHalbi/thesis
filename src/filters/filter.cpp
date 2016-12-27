@@ -2,6 +2,7 @@
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
 #include <CImg/CImg.h>
+#include <math.h>
 #include "./filter.h"
 
 using cimg_library::CImg;
@@ -17,16 +18,16 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
   int width = input.width();
   int height = input.height();
 
-  //            x / b
-  //       o------------->
-  //       |
-  //       |
-  //       |
-  // y / a |
-  //       |
-  //       |
-  //       |
-  //       v
+  //          x
+  //   o------------->
+  //   |  +--+--+--+
+  //   |  |  |  |  |
+  //   |  +--+--+--+
+  // y | a|  |  |  |
+  //   |  +--+--+--+
+  //   |  |  |  |  |
+  //   |  +--+--+--+
+  //   v      b
   for (int y = 0; y < width; y++) {
     for (int x = 0; x < height; x++) {
       int rMedian = 0;
@@ -42,7 +43,7 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
           if (currentX >= 0 && currentY >= 0 &&
               currentX < width && currentY < height) {
             Color currentFilterColor =
-              getBayerPixelColor(input, currentX, currentY);
+              getBayerPixelColor(currentX, currentY);
             switch (currentFilterColor) {
               case RED:
                 rMedian += input(currentX, currentY, 0, 0);
@@ -63,7 +64,7 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
       rMedian = rMedian / rCount;
       gMedian = gMedian / gCount;
       bMedian = bMedian / bCount;
-      Color filterColor = getBayerPixelColor(input, x, y);
+      Color filterColor = getBayerPixelColor(x, y);
       switch (filterColor) {
         case RED:
           (*output)(x, y, 0, 0) = input(x, y, 0, 0);
@@ -96,22 +97,38 @@ void Filter::bayerGrayscale(const CImg<unsigned char>& input,
       unsigned char red   = input(x, y, 0, 0);
       unsigned char green = input(x, y, 0, 1);
       unsigned char blue  = input(x, y, 0, 2);
-      if ((x % 2 == 0 && y % 2 == 0) ||
-          (x % 2 == 1 && y % 2 == 1)) {
-        (*output)(x, y, 0, 0) = green;
-        (*output)(x, y, 0, 1) = green;
-        (*output)(x, y, 0, 2) = green;
-      } else if (x % 2 == 0 && y % 2 == 1) {
-        (*output)(x, y, 0, 0) = blue;
-        (*output)(x, y, 0, 1) = blue;
-        (*output)(x, y, 0, 2) = blue;
-      } else if (x % 2 == 1 && y % 2 == 0) {
-        (*output)(x, y, 0, 0) = red;
-        (*output)(x, y, 0, 1) = red;
-        (*output)(x, y, 0, 2) = red;
+      Color filterColor = getBayerPixelColor(x, y);
+      switch (filterColor) {
+        case GREEN:
+          (*output)(x, y, 0, 0) = green;
+          (*output)(x, y, 0, 1) = green;
+          (*output)(x, y, 0, 2) = green;
+          break;
+        case BLUE:
+          (*output)(x, y, 0, 0) = blue;
+          (*output)(x, y, 0, 1) = blue;
+          (*output)(x, y, 0, 2) = blue;
+          break;
+        case RED:
+          (*output)(x, y, 0, 0) = red;
+          (*output)(x, y, 0, 1) = red;
+          (*output)(x, y, 0, 2) = red;
+          break;
       }
     }
   }
+}
+
+// _____________________________________________________________________________
+void Filter::bayerGrayscale(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output, const int patternSize) {
+  int imageWidth = input.width();
+  int imageHeight = input.height();
+
+  int patternWidth = imageWidth / patternSize;
+  int patternHeight = imageHeight/ patternSize;
+
+  CImg<unsigned char> temp(patternWidth, patternHeight, 1, 1, 0);
 }
 
 // _____________________________________________________________________________
@@ -125,19 +142,19 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
       unsigned char red   = input(x, y, 0, 0);
       unsigned char green = input(x, y, 0, 1);
       unsigned char blue  = input(x, y, 0, 2);
-      Color filterColor = getBayerPixelColor(input, x, y);
+      Color filterColor = getBayerPixelColor(x, y);
       switch (filterColor) {
-        case Filter::GREEN:
+        case GREEN:
           (*output)(x, y, 0, 0) = 0;
           (*output)(x, y, 0, 1) = green;
           (*output)(x, y, 0, 2) = 0;
           break;
-        case Filter::BLUE:
+        case BLUE:
           (*output)(x, y, 0, 0) = 0;
           (*output)(x, y, 0, 1) = 0;
           (*output)(x, y, 0, 2) = blue;
           break;
-        case Filter::RED:
+        case RED:
           (*output)(x, y, 0, 0) = red;
           (*output)(x, y, 0, 1) = 0;
           (*output)(x, y, 0, 2) = 0;
@@ -148,8 +165,39 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
 }
 
 // ____________________________________________________________________________
-Filter::Color Filter::getBayerPixelColor(const CImg<unsigned char>& input,
-  int x, int y) {
+void Filter::downsample(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output) {
+  int oldWidth = input.width();
+  int oldHeight = input.height();
+  int newWidth = output->width();
+  int newHeight = output->height();
+  int gridSizeX = round(oldWidth / newWidth);
+  int gridSizeY = round(oldHeight/ newHeight);
+
+  for (int y = 0; y < newHeight; y++) {
+    for (int x = 0; x < newWidth; x++) {
+      int newRed = 0, newGreen = 0, newBlue = 0, counter = 0;
+      for (int a = 0; a < gridSizeY; a++) {
+        for (int b = 0; b < gridSizeX; b++) {
+          int xPos = x * gridSizeX + b;
+          int yPos = y * gridSizeY + a;
+          if (xPos >= 0 && xPos < oldWidth && yPos >= 0 && yPos < oldHeight) {
+            newRed += input(x * gridSizeX + b, y * gridSizeY + a, 0, 0);
+            newGreen += input(x * gridSizeX + b, y * gridSizeY + a, 0, 1);
+            newBlue += input(x * gridSizeX + b, y * gridSizeY + a, 0, 2);
+            counter++;
+          }
+        }
+      }
+      (*output)(x, y, 0, 0) = (unsigned char) (newRed / counter);
+      (*output)(x, y, 0, 1) = (unsigned char) (newGreen / counter);
+      (*output)(x, y, 0, 2) = (unsigned char) (newBlue / counter);
+    }
+  }
+}
+
+// ____________________________________________________________________________
+Filter::Color Filter::getBayerPixelColor(int x, int y) {
   if (x % 2 == 0 && y % 2 == 1) {
     return BLUE;
   } else if (x % 2 == 1 && y % 2 == 0) {
