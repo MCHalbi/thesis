@@ -1,11 +1,18 @@
-FILE = filter
+################################################################################
+# Configuration                                                                #
+################################################################################
 
-# Compiler and linker you want to use
-CC = g++
-LD = g++
+# Location of the config file
+CONFIG_FILE = ../Makefile.config
+# Explicitly check for the config file
+ifeq ($(wildcard $(CONFIG_FILE)),)
+$(error $(CONFIG_FILE) not found.)
+endif
+include $(CONFIG_FILE)
 
-# Location of the linter for style checking
-LINT = ../cpplint.py
+SOURCE_PATH = ./
+FILES = filter
+LIST = $(addprefix $(BIN_PATH), $(addsuffix Main, $(FILES)))
 
 # Additional include directorys. Whatever you think you need goes here
 INCLUDE = /home/halbritl/Dokumente/thesis/src/include
@@ -23,24 +30,27 @@ STD = c++11
 # Files to be removed by make clean
 RM = *.o \
      *.png \
-     $(FILE)Main \
+     $(LIST) \
      core
 
+################################################################################
+# Build                                                                        #
+################################################################################
 
 all: compile checkstyle
 
-compile: $(FILE)Main
+compile: $(LIST)
 
 # Link
-%Main: %Main.o %.o
+$(BIN_PATH)%Main: $(addprefix $(SOURCE_PATH), %Main.o %.o)
 	$(LD) -I $(INCLUDE) -o $@ $^ $(LIBS) $(LDFLAGS) $(WARNINGS) -std=$(STD)
 
 # Compile
 %.o: %.cpp
-	$(CC) -I $(INCLUDE) -g -c $^ -std=$(STD) $(WARNINGS)
+	$(CC) -I $(INCLUDE) -g -c $^ $(WARNINGS) -std=$(STD)
 
 checkstyle:
-	python $(LINT) *.cpp *.h
+	python $(LINT_PATH) *.cpp *.h
 
 # Delete binarys and object files
 clean:

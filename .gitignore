@@ -12,8 +12,10 @@
 *~
 *.swp
 
+# Exclude Makefile.config
+*Makefile.config
+
 # Exclude some folders
-dispflownet-release/
 usr/
-cuda/
 src/include/
+bin/
