@@ -1,0 +1,12 @@
+# Location of the repository on local system
+ROOT = /path/to/your/repo
+
+# Path to the binary folder
+BIN_PATH = $(ROOT)bin/
+
+# Path to the linter
+LINT_PATH = $(ROOT)src/cpplint.py
+
+# Compiler and linker you want to use
+CC = g++
+LD = g++
