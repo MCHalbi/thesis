@@ -54,6 +54,15 @@ class Filter {
   static void downsample(const CImg<unsigned char>& input,
     CImg<unsigned char>* output);
 
+  // Upsample an rgb image. Therefore use no interpolation, i.e. each pixel
+  // is rescaled without respect to it's neighbour pixels. The result is a
+  // pixelated image.
+  // params: input - Reference to the image you want to rescale
+  //         ouput - Pointer to the object where your new image will be saved.
+  //           The input will be upsampled to the size of this CImg object
+  static void upsampleSimple(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output);
+
  private:
   // Get the filter color of a bayer filter at a given position
   // params: x - The x-value of the filter field of which you want to know the

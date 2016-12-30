@@ -3,6 +3,7 @@
 
 #include <CImg/CImg.h>
 #include <math.h>
+#include <stdio.h>
 #include "./filter.h"
 
 using cimg_library::CImg;
@@ -171,6 +172,8 @@ void Filter::downsample(const CImg<unsigned char>& input,
   int oldHeight = input.height();
   int newWidth = output->width();
   int newHeight = output->height();
+  // Size of the area of the input image which will be merged into one pixel in
+  // the ouptut image
   int gridSizeX = round(oldWidth / newWidth);
   int gridSizeY = round(oldHeight/ newHeight);
 
@@ -192,6 +195,31 @@ void Filter::downsample(const CImg<unsigned char>& input,
       (*output)(x, y, 0, 0) = (unsigned char) (newRed / counter);
       (*output)(x, y, 0, 1) = (unsigned char) (newGreen / counter);
       (*output)(x, y, 0, 2) = (unsigned char) (newBlue / counter);
+    }
+  }
+}
+
+// ____________________________________________________________________________
+void Filter::upsampleSimple(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output) {
+  int oldWidth = input.width();
+  int oldHeight = input.height();
+  int newWidth = output->width();
+  int newHeight = output->height();
+
+  int gridSizeX = round(newWidth / oldWidth);
+  int gridSizeY = round(newHeight / oldHeight);
+
+  printf("grid size: %d x %d", gridSizeX, gridSizeY);
+  fflush(stdout);
+
+  for (int y = 0; y < newHeight; y++) {
+    for (int x = 0; x < newWidth; x++) {
+      int originX = floor(x / gridSizeX);
+      int originY = floor(y / gridSizeY);
+      (*output)(x, y, 0, 0) = input(originX, originY, 0, 0);
+      (*output)(x, y, 0, 1) = input(originX, originY, 0, 1);
+      (*output)(x, y, 0, 2) = input(originX, originY, 0, 2);
     }
   }
 }

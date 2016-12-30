@@ -1,24 +1,31 @@
 // Copyright 2016
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
+#include <stdlib.h>
 #include "./filter.h"
 
 using cimg_library::CImg;
 using cimg_library::CImgDisplay;
 
-int main() {
+int main(int argc, char** argv) {
+  int smallSize = atoi(argv[1]);
+  int largeSize = atoi(argv[2]);
   const CImg<unsigned char> image("../../image/original/lena1.png");
-  CImg<unsigned char> result1(256, 256, 1, 3, 0), result2(500, 500, 1, 3, 0);
+  CImg<unsigned char> small(smallSize, smallSize, 1, 3, 0),
+    large(largeSize, largeSize, 1, 3, 0);
 
-  Filter::downsample(image, &result1);
-  Filter::downsample(image, &result2);
+  Filter::downsample(image, &small);
+  Filter::upsampleSimple(small, &large);
 
-  CImgDisplay result1Disp(result1, "result1 (256 x 256)"),
-    result2Disp(result2, "result2 (500 x 500)");
+  small.save("small.png");
+  large.save("large.png");
 
-  while (!result1Disp.is_closed() || !result2Disp.is_closed()) {
-    result1Disp.wait();
-    result2Disp.wait();
+  CImgDisplay smallDisp(small, "Small"),
+    largeDisp(large, "Large");
+
+  while (!smallDisp.is_closed() || !largeDisp.is_closed()) {
+    smallDisp.wait();
+    largeDisp.wait();
   }
 
   return EXIT_SUCCESS;
