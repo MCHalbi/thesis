@@ -9,27 +9,24 @@ using cimg_library::CImgDisplay;
 
 int main(int argc, char** argv) {
   // Print USAGE message
-  if (argc != 3) {
-    printf("Usage: ./filterMain [smallSize] [largeSize]");
+  if (argc != 2) {
+    printf("Usage: ./filterMain [filterSize]");
   }
-  int smallSize = atoi(argv[1]);
-  int largeSize = atoi(argv[2]);
+
+  int filterSize = atoi(argv[1]);
   const CImg<unsigned char> image("../../image/original/lena1.png");
-  CImg<unsigned char> small(smallSize, smallSize, 1, 3, 0),
-    large(largeSize, largeSize, 1, 3, 0);
+  int width = image.width();
+  int height = image.height();
+  CImg<unsigned char> filtered(width, height, 1, 3, 0);
 
-  Filter::downsample(image, &small);
-  Filter::upsampleSimple(small, &large);
+  Filter::bayerColor(image, &filtered, filterSize);
 
-  small.save("small.png");
-  large.save("large.png");
+  filtered.save("filtered.png");
 
-  CImgDisplay smallDisp(small, "Small"),
-    largeDisp(large, "Large");
+  CImgDisplay filteredDisp(filtered, "Filtered");
 
-  while (!smallDisp.is_closed() || !largeDisp.is_closed()) {
-    smallDisp.wait();
-    largeDisp.wait();
+  while (!filteredDisp.is_closed()) {
+    filteredDisp.wait();
   }
 
   return EXIT_SUCCESS;

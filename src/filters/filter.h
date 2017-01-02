@@ -33,7 +33,7 @@ class Filter {
   // Generate a grayscale image as an bayer filter would generate it on an
   // image sensor. The size of the bayer pattern can be choosen.
   // params: input - An RGB input image
-  //         output - Reference to the filtered grayscale image
+  //         output - The filtered grayscale image
   //         patternSize - The grid size of the bayer filter. This parameter
   //           specifies the size of one field in the pattern, not of one GRBG
   //           field group
@@ -43,25 +43,19 @@ class Filter {
   // Generate a rgb image as you would gain it from coloring an bayer filtered
   // grayscale image.
   // params: input - An RGB input image
-  //         output - Reference to the colored bayer filtered image
+  //         output - The colored bayer filtered image
   static void bayerColor(const CImg<unsigned char>& input,
     CImg<unsigned char>* output);
 
-  // Downsample an rgb image.
-  // params: input - Reference to the image you want to rescale
-  //         ouput - Pointer to the object where your new image will be saved.
-  //           The input will be downsampled to the size of this CImg object
-  static void downsample(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output);
-
-  // Upsample an rgb image. Therefore use no interpolation, i.e. each pixel
-  // is rescaled without respect to it's neighbour pixels. The result is a
-  // pixelated image.
-  // params: input - Reference to the image you want to rescale
-  //         ouput - Pointer to the object where your new image will be saved.
-  //           The input will be upsampled to the size of this CImg object
-  static void upsampleSimple(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output);
+  // Generate a rgb image as you would gain it from coloring an bayer filtered
+  // grayscale image with a given filter grid size.
+  // params: input - A reference to the input image
+  //         output - Pointer to the output image
+  //         gridSize - Grid size of the bayer filter. The grid size refers to
+  //           the size of one color field, i. e. a green, red or blue filter
+  //           tile measures gridSize * gridSize pixels
+  static void bayerColor(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output, const int filterSize);
 
  private:
   // Get the filter color of a bayer filter at a given position
@@ -69,7 +63,7 @@ class Filter {
   //           color
   //         y - The y-value of the filter field of which you want to know the
   //           color
-  static Filter::Color getBayerPixelColor(int x, int y);
+  static Filter::Color getBayerPixelColor(const int x, const int y);
 };
 
 #endif  // SRC_FILTERS_FILTER_H_

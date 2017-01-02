@@ -166,63 +166,63 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
 }
 
 // ____________________________________________________________________________
-void Filter::downsample(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output) {
-  int oldWidth = input.width();
-  int oldHeight = input.height();
-  int newWidth = output->width();
-  int newHeight = output->height();
-  // Size of the area of the input image which will be merged into one pixel in
-  // the ouptut image
-  int gridSizeX = ceil(oldWidth / newWidth);
-  int gridSizeY = ceil(oldHeight / newHeight);
+void Filter::bayerColor(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output, const int gridSize) {
+  int width = input.width();
+  int height = input.height();
 
-  for (int y = 0; y < newHeight; y++) {
-    for (int x = 0; x < newWidth; x++) {
-      int newRed = 0, newGreen = 0, newBlue = 0, counter = 0;
-      for (int a = 0; a < gridSizeY; a++) {
-        for (int b = 0; b < gridSizeX; b++) {
-          int xPos = x * gridSizeX + b;
-          int yPos = y * gridSizeY + a;
-          if (xPos >= 0 && xPos < oldWidth && yPos >= 0 && yPos < oldHeight) {
-            newRed += input(x * gridSizeX + b, y * gridSizeY + a, 0, 0);
-            newGreen += input(x * gridSizeX + b, y * gridSizeY + a, 0, 1);
-            newBlue += input(x * gridSizeX + b, y * gridSizeY + a, 0, 2);
-            counter++;
+  for (int y = 0; y < height; y += gridSize) {
+    for (int x = 0; x < width; x += gridSize) {
+      // First, calculate  the means of the areas in the image which are
+      // covered by a single filter tile ...
+      int meanR = 0, meanG = 0, meanB = 0, count = 0;
+      for (int offsetY = 0; offsetY < gridSize; offsetY++) {
+        for (int offsetX = 0; offsetX < gridSize; offsetX++) {
+          if (x + offsetX < width && y + offsetY < height) {
+            meanR += input(x + offsetX, y + offsetY, 0, 0);
+            meanG += input(x + offsetX, y + offsetY, 0, 1);
+            meanB += input(x + offsetX, y + offsetY, 0, 2);
+            count++;
           }
         }
       }
-      (*output)(x, y, 0, 0) = (unsigned char) (newRed / counter);
-      (*output)(x, y, 0, 1) = (unsigned char) (newGreen / counter);
-      (*output)(x, y, 0, 2) = (unsigned char) (newBlue / counter);
+      meanR /= count;
+      meanG /= count;
+      meanB /= count;
+
+      // ... then fill the corresponding pixels in the output image with this
+      // mean value
+      Color filterColor = getBayerPixelColor(x / gridSize, y / gridSize);
+      printf("Color at (%d, %d) = %d\n", x, y, (int) filterColor);
+      for (int offsetY = 0; offsetY < gridSize; offsetY++) {
+        for (int offsetX = 0; offsetX < gridSize; offsetX++) {
+          if (x + offsetX < width && y + offsetY < height) {
+            switch (filterColor) {
+              case RED:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = meanR;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = 0;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = 0;
+                break;
+              case GREEN:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = 0;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = meanG;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = 0;
+                break;
+              case BLUE:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = 0;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = 0;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = meanB;
+                break;
+            }
+          }
+        }
+      }
     }
   }
 }
 
 // ____________________________________________________________________________
-void Filter::upsampleSimple(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output) {
-  int oldWidth = input.width();
-  int oldHeight = input.height();
-  int newWidth = output->width();
-  int newHeight = output->height();
-
-  int gridSizeX = ceil(newWidth / oldWidth);
-  int gridSizeY = ceil(newHeight / oldHeight);
-
-  for (int y = 0; y < newHeight; y++) {
-    for (int x = 0; x < newWidth; x++) {
-      int originX = floor(x / gridSizeX);
-      int originY = floor(y / gridSizeY);
-      (*output)(x, y, 0, 0) = input(originX, originY, 0, 0);
-      (*output)(x, y, 0, 1) = input(originX, originY, 0, 1);
-      (*output)(x, y, 0, 2) = input(originX, originY, 0, 2);
-    }
-  }
-}
-
-// ____________________________________________________________________________
-Filter::Color Filter::getBayerPixelColor(int x, int y) {
+Filter::Color Filter::getBayerPixelColor(const int x, const int y) {
   if (x % 2 == 0 && y % 2 == 1) {
     return BLUE;
   } else if (x % 2 == 1 && y % 2 == 0) {
