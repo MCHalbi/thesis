@@ -17,16 +17,20 @@ int main(int argc, char** argv) {
   const CImg<unsigned char> image("../../image/original/lena1.png");
   int width = image.width();
   int height = image.height();
-  CImg<unsigned char> filtered(width, height, 1, 3, 0);
+  CImg<unsigned char> grayscale(width, height, 1, 3, 0),
+    color(width, height, 1, 3, 0);
 
-  Filter::bayerColor(image, &filtered, filterSize);
+  Filter::bayerGrayscale(image, &grayscale, filterSize);
+  Filter::bayerColor(image, &color, filterSize);
 
-  filtered.save("filtered.png");
+  grayscale.save("grayscale.png");
+  color.save("color.png");
 
-  CImgDisplay filteredDisp(filtered, "Filtered");
+  CImgDisplay grayscaleDisp(grayscale, "Grayscale");
+  CImgDisplay colorDisp(color, "Color");
 
-  while (!filteredDisp.is_closed()) {
-    filteredDisp.wait();
+  while (!grayscaleDisp.is_closed()) {
+    grayscaleDisp.wait();
   }
 
   return EXIT_SUCCESS;

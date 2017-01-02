@@ -88,6 +88,10 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
 }
 
 // _____________________________________________________________________________
+void Filter::bayerArtifacts(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output, const int gridSize) {}
+
+// _____________________________________________________________________________
 void Filter::bayerGrayscale(const CImg<unsigned char>& input,
   CImg<unsigned char>* output) {
   int width = input.width();
@@ -122,14 +126,57 @@ void Filter::bayerGrayscale(const CImg<unsigned char>& input,
 
 // _____________________________________________________________________________
 void Filter::bayerGrayscale(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, const int patternSize) {
-  int imageWidth = input.width();
-  int imageHeight = input.height();
+  CImg<unsigned char>* output, const int gridSize) {
+  int width = input.width();
+  int height = input.height();
 
-  int patternWidth = imageWidth / patternSize;
-  int patternHeight = imageHeight/ patternSize;
+  for (int y = 0; y < height; y += gridSize) {
+    for (int x = 0; x < width; x += gridSize) {
+      // First, calculate  the means of the areas in the image which are
+      // covered by a single filter tile ...
+      int meanR = 0, meanG = 0, meanB = 0, count = 0;
+      for (int offsetY = 0; offsetY < gridSize; offsetY++) {
+        for (int offsetX = 0; offsetX < gridSize; offsetX++) {
+          if (x + offsetX < width && y + offsetY < height) {
+            meanR += input(x + offsetX, y + offsetY, 0, 0);
+            meanG += input(x + offsetX, y + offsetY, 0, 1);
+            meanB += input(x + offsetX, y + offsetY, 0, 2);
+            count++;
+          }
+        }
+      }
+      meanR /= count;
+      meanG /= count;
+      meanB /= count;
 
-  CImg<unsigned char> temp(patternWidth, patternHeight, 1, 1, 0);
+      // ... then fill the corresponding pixels in the output image with this
+      // mean value
+      Color filterColor = getBayerPixelColor(x / gridSize, y / gridSize);
+      for (int offsetY = 0; offsetY < gridSize; offsetY++) {
+        for (int offsetX = 0; offsetX < gridSize; offsetX++) {
+          if (x + offsetX < width && y + offsetY < height) {
+            switch (filterColor) {
+              case RED:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = meanR;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = meanR;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = meanR;
+                break;
+              case GREEN:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = meanG;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = meanG;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = meanG;
+                break;
+              case BLUE:
+                (*output)(x + offsetX, y + offsetY, 0, 0) = meanB;
+                (*output)(x + offsetX, y + offsetY, 0, 1) = meanB;
+                (*output)(x + offsetX, y + offsetY, 0, 2) = meanB;
+                break;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // _____________________________________________________________________________
@@ -193,7 +240,6 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
       // ... then fill the corresponding pixels in the output image with this
       // mean value
       Color filterColor = getBayerPixelColor(x / gridSize, y / gridSize);
-      printf("Color at (%d, %d) = %d\n", x, y, (int) filterColor);
       for (int offsetY = 0; offsetY < gridSize; offsetY++) {
         for (int offsetX = 0; offsetX < gridSize; offsetX++) {
           if (x + offsetX < width && y + offsetY < height) {

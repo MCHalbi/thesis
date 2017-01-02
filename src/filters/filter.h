@@ -15,13 +15,24 @@ class Filter {
   // Constructor
   Filter();
 
-  // Generate an image with false color artifacts as caused by an bayer filter
+  // Generate an image with color artifacts as caused by an bayer filter
   // This is obtained by adding a bayer filter to the image and then
   // interpolating the pixel values with the colors of this filtered image
   // params: input - An RGB input image
   //         output - Reference to the image with artifacts
   static void bayerArtifacts(const CImg<unsigned char>& input,
     CImg<unsigned char>* output);
+
+  // Generate an image with color artifacts as caused by an bayer filter with
+  // given grid size. This is obtained by adding a bayer filter to the image and
+  // then interpolating the pixel values with the colors of this filtered image.
+  // params: input - An RGB input image
+  //         output - Reference to the image with artifacts
+  //         gridSize - Grid size of the bayer filter. The grid size refers to
+  //           the size of one color field, i. e. a green, red or blue filter
+  //           tile measures gridSize * gridSize pixels
+  static void bayerArtifacts(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output, const int gridSize);
 
   // Generate a grayscale image as an bayer filter would generate it on an
   // image sensor.
@@ -34,11 +45,11 @@ class Filter {
   // image sensor. The size of the bayer pattern can be choosen.
   // params: input - An RGB input image
   //         output - The filtered grayscale image
-  //         patternSize - The grid size of the bayer filter. This parameter
+  //         gridSize - The grid size of the bayer filter. This parameter
   //           specifies the size of one field in the pattern, not of one GRBG
   //           field group
   static void bayerGrayscale(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, const int patternSize);
+    CImg<unsigned char>* output, const int gridSize);
 
   // Generate a rgb image as you would gain it from coloring an bayer filtered
   // grayscale image.
