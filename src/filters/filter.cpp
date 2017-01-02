@@ -19,67 +19,56 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
   int width = input.width();
   int height = input.height();
 
-  //          x
-  //   o------------->
-  //   |  +--+--+--+
-  //   |  |  |  |  |
-  //   |  +--+--+--+
-  // y | a|  |  |  |
-  //   |  +--+--+--+
-  //   |  |  |  |  |
-  //   |  +--+--+--+
-  //   v      b
   for (int y = 0; y < width; y++) {
     for (int x = 0; x < height; x++) {
-      int rMedian = 0;
-      int gMedian = 0;
-      int bMedian = 0;
-      int rCount = 0;
-      int gCount = 0;
-      int bCount = 0;
-      for (int a = -1; a <= 1; a++) {
-        for (int b = -1; b <= 1; b++) {
-          int currentX = x + b;
-          int currentY = y + a;
+      // Calculate mean value of the pixel enviroment
+      int meanR = 0, meanG = 0, meanB = 0;
+      int countR = 0, countG = 0, countB = 0;
+      for (int offsetY = -1; offsetY <= 1; offsetY++) {
+        for (int offsetX = -1; offsetX <= 1; offsetX++) {
+          int currentX = x + offsetX;
+          int currentY = y + offsetY;
+          Color currentFilterColor = getBayerPixelColor(currentX, currentY);
           if (currentX >= 0 && currentY >= 0 &&
               currentX < width && currentY < height) {
-            Color currentFilterColor =
-              getBayerPixelColor(currentX, currentY);
             switch (currentFilterColor) {
               case RED:
-                rMedian += input(currentX, currentY, 0, 0);
-                rCount++;
+                meanR += input(currentX, currentY, 0, 0);
+                countR++;
                 break;
               case GREEN:
-                gMedian += input(currentX, currentY, 0, 1);
-                gCount++;
+                meanG += input(currentX, currentY, 0, 1);
+                countG++;
                 break;
               case BLUE:
-                bMedian += input(currentX, currentY, 0, 2);
-                bCount++;
+                meanB += input(currentX, currentY, 0, 2);
+                countB++;
                 break;
             }
           }
         }
       }
-      rMedian = rMedian / rCount;
-      gMedian = gMedian / gCount;
-      bMedian = bMedian / bCount;
+
+      meanR /= countR;
+      meanG /= countG;
+      meanB /= countB;
+
+      // Set pixel value of the output image
       Color filterColor = getBayerPixelColor(x, y);
       switch (filterColor) {
         case RED:
           (*output)(x, y, 0, 0) = input(x, y, 0, 0);
-          (*output)(x, y, 0, 1) = (unsigned char) gMedian;
-          (*output)(x, y, 0, 2) = (unsigned char) bMedian;
+          (*output)(x, y, 0, 1) = (unsigned char) meanG;
+          (*output)(x, y, 0, 2) = (unsigned char) meanB;
           break;
         case GREEN:
-          (*output)(x, y, 0, 0) = (unsigned char) rMedian;
+          (*output)(x, y, 0, 0) = (unsigned char) meanR;
           (*output)(x, y, 0, 1) = input(x, y, 0, 1);
-          (*output)(x, y, 0, 2) = (unsigned char) bMedian;
+          (*output)(x, y, 0, 2) = (unsigned char) meanB;
           break;
         case BLUE:
-          (*output)(x, y, 0, 0) = (unsigned char) rMedian;
-          (*output)(x, y, 0, 1) = (unsigned char) gMedian;
+          (*output)(x, y, 0, 0) = (unsigned char) meanR;
+          (*output)(x, y, 0, 1) = (unsigned char) meanG;
           (*output)(x, y, 0, 2) = input(x, y, 0, 2);
           break;
       }
@@ -89,7 +78,83 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
 
 // _____________________________________________________________________________
 void Filter::bayerArtifacts(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, const int gridSize) {}
+  CImg<unsigned char>* output, const int gSize) {
+  Filter::bayerColor(input, output);
+
+  int width = input.width();
+  int height = input.height();
+
+  for (int y = 0; y < height; y += gSize) {
+    for (int x = 0; x < width; x += gSize) {
+      // Calculate mean values
+      int meanR = 0, meanG = 0, meanB = 0;
+      int countR = 0, countG = 0, countB = 0;
+      for (int offsY = -1 * gSize; offsY <= 1 * gSize; offsY += gSize) {
+        for (int offsX = -1 * gSize; offsX <= 1 * gSize; offsX += gSize) {
+          int currentX = x + offsX;
+          int currentY = y + offsY;
+          Color currentFilterColor =
+            getBayerPixelColor(currentX / gSize, currentY / gSize);
+          if (currentX >= 0 && currentY >= 0 &&
+            currentX < width && currentY < height) {
+            switch (currentFilterColor) {
+              case RED:
+                meanR += input(currentX, currentY, 0, 0);
+                countR++;
+                break;
+              case GREEN:
+                meanG += input(currentX, currentY, 0, 1);
+                countG++;
+                break;
+              case BLUE:
+                meanB += input(currentX, currentY, 0, 2);
+                countB++;
+                break;
+            }
+          }
+        }
+      }
+
+      meanR /= countR;
+      meanG /= countG;
+      meanB /= countB;
+
+      // Set new rgb pixel values
+      Color filterColor = getBayerPixelColor(x, y);
+      unsigned char valR, valG, valB;
+      switch (filterColor) {
+        case RED:
+          valR = input(x, y, 0, 0);
+          valG = (unsigned char) meanG;
+          valB = (unsigned char) meanB;
+          break;
+        case GREEN:
+          valR = (unsigned char) meanR;
+          valG = input(x, y, 0, 1);
+          valB = (unsigned char) meanB;
+          break;
+        case BLUE:
+          valR = (unsigned char) meanR;
+          valG = (unsigned char) meanG;
+          valB = input(x, y, 0, 2);
+          break;
+      }
+
+      // Safe new value in the output image
+      for (int offsetY = 0; offsetY < gSize; offsetY++) {
+        for (int offsetX = 0; offsetX < gSize; offsetX++) {
+          int currentX = x + offsetX;
+          int currentY = y + offsetY;
+          if (currentX < width && currentY < height) {
+            (*output)(currentX, currentY, 0, 0) = valR;
+            (*output)(currentX, currentY, 0, 1) = valG;
+            (*output)(currentX, currentY, 0, 2) = valB;
+          }
+        }
+      }
+    }
+  }
+}
 
 // _____________________________________________________________________________
 void Filter::bayerGrayscale(const CImg<unsigned char>& input,

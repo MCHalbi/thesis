@@ -2,6 +2,7 @@
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "./filter.h"
 
 using cimg_library::CImg;
@@ -17,20 +18,20 @@ int main(int argc, char** argv) {
   const CImg<unsigned char> image("../../image/original/lena1.png");
   int width = image.width();
   int height = image.height();
-  CImg<unsigned char> grayscale(width, height, 1, 3, 0),
-    color(width, height, 1, 3, 0);
+  CImg<unsigned char> pattern(width, height, 1, 3),
+    patternrgb(width, height, 1, 3);
 
-  Filter::bayerGrayscale(image, &grayscale, filterSize);
-  Filter::bayerColor(image, &color, filterSize);
+  Filter::bayerArtifacts(image, &pattern);
+  Filter::bayerArtifacts(image, &patternrgb, filterSize);
 
-  grayscale.save("grayscale.png");
-  color.save("color.png");
+  pattern.save("artifacts.png");
+  patternrgb.save("artifactsscale.png");
 
-  CImgDisplay grayscaleDisp(grayscale, "Grayscale");
-  CImgDisplay colorDisp(color, "Color");
+  CImgDisplay patternDisp(pattern, "Artifacts");
+  CImgDisplay patternrgbDisp(patternrgb, "Artifacts scaled");
 
-  while (!grayscaleDisp.is_closed()) {
-    grayscaleDisp.wait();
+  while (!patternDisp.is_closed()) {
+    patternDisp.wait();
   }
 
   return EXIT_SUCCESS;
