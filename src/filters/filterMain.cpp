@@ -8,6 +8,10 @@ using cimg_library::CImg;
 using cimg_library::CImgDisplay;
 
 int main(int argc, char** argv) {
+  // Print USAGE message
+  if (argc != 3) {
+    printf("Usage: ./filterMain [smallSize] [largeSize]");
+  }
   int smallSize = atoi(argv[1]);
   int largeSize = atoi(argv[2]);
   const CImg<unsigned char> image("../../image/original/lena1.png");

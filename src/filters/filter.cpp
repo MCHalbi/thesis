@@ -174,8 +174,8 @@ void Filter::downsample(const CImg<unsigned char>& input,
   int newHeight = output->height();
   // Size of the area of the input image which will be merged into one pixel in
   // the ouptut image
-  int gridSizeX = round(oldWidth / newWidth);
-  int gridSizeY = round(oldHeight/ newHeight);
+  int gridSizeX = ceil(oldWidth / newWidth);
+  int gridSizeY = ceil(oldHeight / newHeight);
 
   for (int y = 0; y < newHeight; y++) {
     for (int x = 0; x < newWidth; x++) {
@@ -207,11 +207,8 @@ void Filter::upsampleSimple(const CImg<unsigned char>& input,
   int newWidth = output->width();
   int newHeight = output->height();
 
-  int gridSizeX = round(newWidth / oldWidth);
-  int gridSizeY = round(newHeight / oldHeight);
-
-  printf("grid size: %d x %d", gridSizeX, gridSizeY);
-  fflush(stdout);
+  int gridSizeX = ceil(newWidth / oldWidth);
+  int gridSizeY = ceil(newHeight / oldHeight);
 
   for (int y = 0; y < newHeight; y++) {
     for (int x = 0; x < newWidth; x++) {
