@@ -120,37 +120,39 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
 
       // Set new rgb pixel values
       Color filterColor = getBayerPixelColor(x, y);
-      unsigned char valR, valG, valB;
+      unsigned char fillColor[3];
       switch (filterColor) {
         case RED:
-          valR = input(x, y, 0, 0);
-          valG = (unsigned char) meanG;
-          valB = (unsigned char) meanB;
+          fillColor[0] = input(x, y, 0, 0);
+          fillColor[1] = (unsigned char) meanG;
+          fillColor[2] = (unsigned char) meanB;
           break;
         case GREEN:
-          valR = (unsigned char) meanR;
-          valG = input(x, y, 0, 1);
-          valB = (unsigned char) meanB;
+          fillColor[0] = (unsigned char) meanR;
+          fillColor[1] = input(x, y, 0, 1);
+          fillColor[2] = (unsigned char) meanB;
           break;
         case BLUE:
-          valR = (unsigned char) meanR;
-          valG = (unsigned char) meanG;
-          valB = input(x, y, 0, 2);
+          fillColor[0] = (unsigned char) meanR;
+          fillColor[1] = (unsigned char) meanG;
+          fillColor[2] = input(x, y, 0, 2);
           break;
       }
 
       // Safe new value in the output image
-      for (int offsetY = 0; offsetY < gSize; offsetY++) {
-        for (int offsetX = 0; offsetX < gSize; offsetX++) {
-          int currentX = x + offsetX;
-          int currentY = y + offsetY;
-          if (currentX < width && currentY < height) {
-            (*output)(currentX, currentY, 0, 0) = valR;
-            (*output)(currentX, currentY, 0, 1) = valG;
-            (*output)(currentX, currentY, 0, 2) = valB;
-          }
-        }
-      }
+      // for (int offsetY = 0; offsetY < gSize; offsetY++) {
+      //   for (int offsetX = 0; offsetX < gSize; offsetX++) {
+      //     int currentX = x + offsetX;
+      //     int currentY = y + offsetY;
+      //     if (currentX < width && currentY < height) {
+      //       (*output)(currentX, currentY, 0, 0) = valR;
+      //       (*output)(currentX, currentY, 0, 1) = valG;
+      //       (*output)(currentX, currentY, 0, 2) = valB;
+      //     }
+      //   }
+      // }
+
+      output->draw_rectangle(x, y, x + gSize, y + gSize, fillColor);
     }
   }
 }
