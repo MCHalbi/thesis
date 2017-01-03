@@ -80,7 +80,6 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
 void Filter::bayerArtifacts(const CImg<unsigned char>& input,
   CImg<unsigned char>* output, const int r, const int gSize) {
   Filter::bayerColor(input, output);
-
   int width = input.width();
   int height = input.height();
 
@@ -210,6 +209,7 @@ void Filter::bayerGrayscale(const CImg<unsigned char>& input,
           }
         }
       }
+
       meanR /= count;
       meanG /= count;
       meanB /= count;
