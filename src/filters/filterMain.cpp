@@ -36,6 +36,9 @@ int main(int argc, char** argv) {
       end = clock();
       duration[size - 1][rad] =
         (end - start) / static_cast<double>(CLOCKS_PER_SEC) * 1000;
+      string radStr = to_string(rad);
+      string sizeStr = to_string(size);
+      output.save(("lena_rad_" + radStr + "_grid_" + sizeStr + ".png").c_str());
     }
   }
 
