@@ -13,7 +13,7 @@ Filter::Filter() {}
 
 // _____________________________________________________________________________
 void Filter::bayerArtifacts(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output) {
+  CImg<unsigned char>* output, const int r) {
   Filter::bayerColor(input, output);
 
   int width = input.width();
@@ -24,8 +24,8 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
       // Calculate mean value of the pixel enviroment
       int meanR = 0, meanG = 0, meanB = 0;
       int countR = 0, countG = 0, countB = 0;
-      for (int offsetY = -1; offsetY <= 1; offsetY++) {
-        for (int offsetX = -1; offsetX <= 1; offsetX++) {
+      for (int offsetY = -r; offsetY <= r; offsetY++) {
+        for (int offsetX = -r; offsetX <= r; offsetX++) {
           int currentX = x + offsetX;
           int currentY = y + offsetY;
           Color currentFilterColor = getBayerPixelColor(currentX, currentY);
@@ -49,9 +49,9 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
         }
       }
 
-      meanR /= countR;
-      meanG /= countG;
-      meanB /= countB;
+      if (countR != 0) meanR /= countR;
+      if (countG != 0) meanG /= countG;
+      if (countB != 0) meanB /= countB;
 
       // Set pixel value of the output image
       Color filterColor = getBayerPixelColor(x, y);
@@ -78,7 +78,7 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
 
 // _____________________________________________________________________________
 void Filter::bayerArtifacts(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, const int gSize) {
+  CImg<unsigned char>* output, const int r, const int gSize) {
   Filter::bayerColor(input, output);
 
   int width = input.width();
@@ -89,8 +89,8 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
       // Calculate mean values
       int meanR = 0, meanG = 0, meanB = 0;
       int countR = 0, countG = 0, countB = 0;
-      for (int offsY = -1 * gSize; offsY <= 1 * gSize; offsY += gSize) {
-        for (int offsX = -1 * gSize; offsX <= 1 * gSize; offsX += gSize) {
+      for (int offsY = -r * gSize; offsY <= r * gSize; offsY += gSize) {
+        for (int offsX = -r * gSize; offsX <= r * gSize; offsX += gSize) {
           int currentX = x + offsX;
           int currentY = y + offsY;
           Color currentFilterColor =
@@ -115,9 +115,9 @@ void Filter::bayerArtifacts(const CImg<unsigned char>& input,
         }
       }
 
-      meanR /= countR;
-      meanG /= countG;
-      meanB /= countB;
+      if (countR != 0) meanR /= countR;
+      if (countG != 0) meanG /= countG;
+      if (countB != 0) meanB /= countB;
 
       // Set new rgb pixel values
       Color filterColor = getBayerPixelColor(x, y);

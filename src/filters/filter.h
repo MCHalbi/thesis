@@ -20,8 +20,9 @@ class Filter {
   // interpolating the pixel values with the colors of this filtered image
   // params: input - An RGB input image
   //         output - Reference to the image with artifacts
+  //         radius - Interpolation radius
   static void bayerArtifacts(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output);
+    CImg<unsigned char>* output, const int radius);
 
   // Generate an image with color artifacts as caused by an bayer filter with
   // given grid size. This is obtained by adding a bayer filter to the image and
@@ -32,7 +33,7 @@ class Filter {
   //           the size of one color field, i. e. a green, red or blue filter
   //           tile measures gridSize * gridSize pixels
   static void bayerArtifacts(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, const int gridSize);
+    CImg<unsigned char>* output, const int radius, const int gridSize);
 
   // Generate a grayscale image as an bayer filter would generate it on an
   // image sensor.
