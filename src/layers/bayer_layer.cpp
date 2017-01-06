@@ -11,6 +11,11 @@ template <typename Dtype>
 void BayerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const vector<Blob<Dtype>*>& top) {
   // TODO: Implement Forward_cpu
+
+  const Dtype* bottomData = bottom[0]->cpu_data();
+  Dtype topData = top[0]->mutable_cpu_data();
+  const int count = bottom[0]->count();
+
 }
 
 template <typename Dtype>

@@ -69,6 +69,16 @@ class Filter {
   static void bayerColor(const CImg<unsigned char>& input,
     CImg<unsigned char>* output, const int filterSize);
 
+  // Apply an fisheye effect on the image.
+  // params: input -
+  //         output -
+  static void rectilinearToFisheye(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output);
+
+  // Correct image distortion caused by fisheye effect
+  static void fisheyeToRectilinear(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output);
+
  private:
   // Get the filter color of a bayer filter at a given position
   // params: x - The x-value of the filter field of which you want to know the
