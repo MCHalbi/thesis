@@ -333,6 +333,58 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
 }
 
 // ____________________________________________________________________________
+void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output, int radius) {
+  int width = input.width();
+  int height = input.height();
+
+  for (int y = 0; y < height; y++) {
+    int centerY = height / 2 - y;
+    for (int x = 0; x < width; x++) {
+      int centerX = x - width / 2;
+      int maxLength = getMaxLength(centerX, centerY, radius);
+      int newX = (centerX *  maxLength / radius) + (width / 2);
+      int newY = (height / 2) - (centerY * maxLength / radius);
+      if (!(newX < 0 || newX >= width || newY < 0 || newY >= height)) {
+        (*output)(x, y, 0, 0) = input(newX, newY, 0, 0);
+        (*output)(x, y, 0, 1) = input(newX, newY, 0, 1);
+        (*output)(x, y, 0, 2) = input(newX, newY, 0, 2);
+      } else {
+        (*output)(x, y, 0, 0) = 0;
+        (*output)(x, y, 0, 1) = 0;
+        (*output)(x, y, 0, 2) = 0;
+      }
+    }
+  }
+}
+
+// ____________________________________________________________________________
+void Filter::fisheyeToRectilinear(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output, int radius) {
+  int width = input.width();
+  int height = input.height();
+
+  for (int y = 0; y < height; y++) {
+    int centerY = height / 2 - y;
+    for (int x = 0; x < width; x++) {
+      int centerX = x - width / 2;
+      int maxLength = getMaxLength(centerX, centerY, radius);
+      int newX = (centerX * radius / maxLength) + (width / 2);
+      int newY = (height / 2) - (centerY * radius / maxLength);
+      if (!(newX < 0 || newX >= width || newY < 0 || newY >= height)) {
+        (*output)(x, y, 0, 0) = input(newX, newY, 0, 0);
+        (*output)(x, y, 0, 1) = input(newX, newY, 0, 1);
+        (*output)(x, y, 0, 2) = input(newX, newY, 0, 2);
+      } else {
+        (*output)(x, y, 0, 0) = 0;
+        (*output)(x, y, 0, 1) = 0;
+        (*output)(x, y, 0, 2) = 0;
+      }
+    }
+  }
+}
+
+// ____________________________________________________________________________
 Filter::Color Filter::getBayerPixelColor(const int x, const int y) {
   if (x % 2 == 0 && y % 2 == 1) {
     return BLUE;
@@ -340,5 +392,16 @@ Filter::Color Filter::getBayerPixelColor(const int x, const int y) {
     return RED;
   } else {
     return GREEN;
+  }
+}
+
+// ____________________________________________________________________________
+float Filter::getMaxLength(int x, int y, int r) {
+  if (x == 0 || y == 0) {
+    return r;
+  } else if (abs(x) >= abs(y)) {
+    return sqrt(pow(r, 2) + pow(y * r / x, 2));
+  } else {
+    return sqrt(pow(r, 2) + pow(x * r / y, 2));
   }
 }

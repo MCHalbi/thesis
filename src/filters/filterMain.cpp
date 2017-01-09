@@ -11,8 +11,6 @@ using cimg_library::CImg;
 using cimg_library::CImgDisplay;
 using std::string;
 using std::to_string;
-using std::ctime;
-using std::clock;
 
 int main(int argc, char** argv) {
   // Print USAGE message
@@ -25,55 +23,16 @@ int main(int argc, char** argv) {
   int width = image.width();
   int height = image.height();
   CImg<unsigned char> output(width, height, 1, 3);
+  CImg<unsigned char> output2(width, height, 1, 3);
 
-  clock_t start;
-  clock_t end;
-  double duration[10][11] = {0};
-  for (int rad = 0; rad <= 10; rad++) {
-    for (int size = 1; size <= 10; size++) {
-      start = clock();
-      Filter::bayerArtifacts(image, &output, rad, size);
-      end = clock();
-      duration[size - 1][rad] =
-        (end - start) / static_cast<double>(CLOCKS_PER_SEC) * 1000;
-      string radStr = to_string(rad);
-      string sizeStr = to_string(size);
-      output.save(("lena_rad_" + radStr + "_grid_" + sizeStr + ".png").c_str());
-    }
-  }
+  Filter::rectilinearToFisheye(image, &output, width / 2);
+  output.save("fisheyeToRectilinear.jpg");
+  printf("ping");
+  fflush(stdout);
+  Filter::fisheyeToRectilinear(output, &output2, width / 2);
+  printf("pong");
+  fflush(stdout);
+  output2.save("rectilinearToFisheye.jpg");
 
-  double sum = 0;
-  printf("                                             grid\n");
-  printf("   ");
-  for (int size = 1; size <= 10; size++) {
-    if (size < 10) {
-      printf("        %d", size);
-    } else {
-      printf("       %d", size);
-    }
-  }
-  printf("\n");
-  for (int rad = 0; rad <= 10; rad++) {
-    if (rad < 10) {
-      printf("  %d", rad);
-    } else {
-      printf(" %d", rad);
-    }
-    for (int size = 1; size <= 10; size++) {
-      double curr = duration[size - 1][rad];
-      if (curr < 10) {
-        printf("    %.3f", curr);
-      } else if (curr < 100) {
-        printf("   %.3f", curr);
-      } else if (curr < 1000) {
-        printf("  %.3f", curr);
-      } else {
-        printf(" %.3f", curr);
-      }
-      sum += curr;
-    }
-    printf("\n");
-  }
-  printf("TOTAL TIME ELAPSED = %f\n", sum);
   return EXIT_SUCCESS;
 }
