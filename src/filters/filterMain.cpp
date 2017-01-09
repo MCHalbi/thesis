@@ -11,6 +11,8 @@ using cimg_library::CImg;
 using cimg_library::CImgDisplay;
 using std::string;
 using std::to_string;
+using std::ctime;
+using std::clock;
 
 int main(int argc, char** argv) {
   // Print USAGE message
@@ -23,16 +25,13 @@ int main(int argc, char** argv) {
   int width = image.width();
   int height = image.height();
   CImg<unsigned char> output(width, height, 1, 3);
-  CImg<unsigned char> output2(width, height, 1, 3);
 
-  Filter::rectilinearToFisheye(image, &output, width / 2);
-  output.save("fisheyeToRectilinear.jpg");
-  printf("ping");
-  fflush(stdout);
-  Filter::fisheyeToRectilinear(output, &output2, width / 2);
-  printf("pong");
-  fflush(stdout);
-  output2.save("rectilinearToFisheye.jpg");
+  for (float radius = 1; radius <= 2; radius += 0.1) {
+    Filter::rectilinearToFisheye(image, &output, radius);
+
+    string radiusStr = to_string(radius);
+    output.save(("fisheye_radius_" + radiusStr + ".png").c_str());
+  }
 
   return EXIT_SUCCESS;
 }

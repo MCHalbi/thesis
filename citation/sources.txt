@@ -1,1 +1,2 @@
-http://wiki.panotools.org/Fisheye_Projection 
+http://wiki.panotools.org/Fisheye_Projection
+http://popscan.blogspot.de/2012/04/fisheye-lens-equation-simple-fisheye.html

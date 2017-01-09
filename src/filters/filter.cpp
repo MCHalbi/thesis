@@ -334,21 +334,37 @@ void Filter::bayerColor(const CImg<unsigned char>& input,
 
 // ____________________________________________________________________________
 void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, int radius) {
+  CImg<unsigned char>* output, const float radius) {
   int width = input.width();
-  int height = input.height();
+  int height= input.height();
+
+  int halfWidth = width / 2;
+  int halfHeight= height / 2;
 
   for (int y = 0; y < height; y++) {
-    int centerY = height / 2 - y;
     for (int x = 0; x < width; x++) {
-      int centerX = x - width / 2;
-      int maxLength = getMaxLength(centerX, centerY, radius);
-      int newX = (centerX *  maxLength / radius) + (width / 2);
-      int newY = (height / 2) - (centerY * maxLength / radius);
-      if (!(newX < 0 || newX >= width || newY < 0 || newY >= height)) {
-        (*output)(x, y, 0, 0) = input(newX, newY, 0, 0);
-        (*output)(x, y, 0, 1) = input(newX, newY, 0, 1);
-        (*output)(x, y, 0, 2) = input(newX, newY, 0, 2);
+      // Calculate normalized coordinates, center of image is (0, 0)
+      float nX = (float) x / halfWidth - 1;
+      float nY = (float) y / halfHeight - 1;
+
+      // Distance of point (x, y) from center
+      float dist = sqrt(nX * nX + nY * nY);
+
+      // Calculate angle (polar coordinates)
+      float theta = atan2(nY, nX);
+
+      // Calculate new distance
+      dist += radius - sqrt(radius * radius - nX * nX);
+
+      // Translate back to cartesian coordinates
+      int sourceX = (dist * cos(theta) + 1) * halfWidth;
+      int sourceY = (dist * sin(theta) + 1) * halfHeight;
+
+      if (!(sourceX < 0 || sourceX >= width ||
+        sourceY < 0 || sourceY >= height)) {
+        (*output)(x, y, 0, 0) = input(sourceX, sourceY, 0, 0);
+        (*output)(x, y, 0, 1) = input(sourceX, sourceY, 0, 1);
+        (*output)(x, y, 0, 2) = input(sourceX, sourceY, 0, 2);
       } else {
         (*output)(x, y, 0, 0) = 0;
         (*output)(x, y, 0, 1) = 0;
@@ -360,21 +376,34 @@ void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
 
 // ____________________________________________________________________________
 void Filter::fisheyeToRectilinear(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, int radius) {
+  CImg<unsigned char>* output, float strength, float zoom) {
   int width = input.width();
-  int height = input.height();
+  int height= input.height();
+
+  int halfWidth = width / 2;
+  int halfHeight= height / 2;
+
+  if (strength == 0) { strength = 0.0001; }
+  float correctionRadius = sqrt(pow(width, 2) + pow(height, 2)) / strength;
 
   for (int y = 0; y < height; y++) {
-    int centerY = height / 2 - y;
     for (int x = 0; x < width; x++) {
-      int centerX = x - width / 2;
-      int maxLength = getMaxLength(centerX, centerY, radius);
-      int newX = (centerX * radius / maxLength) + (width / 2);
-      int newY = (height / 2) - (centerY * radius / maxLength);
-      if (!(newX < 0 || newX >= width || newY < 0 || newY >= height)) {
-        (*output)(x, y, 0, 0) = input(newX, newY, 0, 0);
-        (*output)(x, y, 0, 1) = input(newX, newY, 0, 1);
-        (*output)(x, y, 0, 2) = input(newX, newY, 0, 2);
+      int newX = x - halfWidth;
+      int newY = y - halfHeight;
+
+      float distance = sqrt(pow(newX, 2) + pow(newY, 2));
+      float r = distance / correctionRadius;
+
+      float theta = (r == 0) ? 1 : atan(r) / r;
+
+      float sourceX = halfWidth + theta * newX * zoom;
+      float sourceY = halfHeight + theta * newY * zoom;
+
+      if (!(sourceX < 0 || sourceX >= width ||
+        sourceY < 0 || sourceY >= height)) {
+        (*output)(x, y, 0, 0) = input(sourceX, sourceY, 0, 0);
+        (*output)(x, y, 0, 1) = input(sourceX, sourceY, 0, 1);
+        (*output)(x, y, 0, 2) = input(sourceX, sourceY, 0, 2);
       } else {
         (*output)(x, y, 0, 0) = 0;
         (*output)(x, y, 0, 1) = 0;
@@ -392,16 +421,5 @@ Filter::Color Filter::getBayerPixelColor(const int x, const int y) {
     return RED;
   } else {
     return GREEN;
-  }
-}
-
-// ____________________________________________________________________________
-float Filter::getMaxLength(int x, int y, int r) {
-  if (x == 0 || y == 0) {
-    return r;
-  } else if (abs(x) >= abs(y)) {
-    return sqrt(pow(r, 2) + pow(y * r / x, 2));
-  } else {
-    return sqrt(pow(r, 2) + pow(x * r / y, 2));
   }
 }

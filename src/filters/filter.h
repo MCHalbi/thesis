@@ -73,11 +73,11 @@ class Filter {
   // params: input -
   //         output -
   static void rectilinearToFisheye(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, int radius);
+    CImg<unsigned char>* output, const float radius);
 
   // Correct image distortion caused by fisheye effect
   static void fisheyeToRectilinear(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, int radius);
+    CImg<unsigned char>* output, float strength, float zoom);
 
  private:
   // Get the filter color of a bayer filter at a given position
@@ -86,15 +86,6 @@ class Filter {
   //         y - The y-value of the filter field of which you want to know the
   //           color
   static Filter::Color getBayerPixelColor(const int x, const int y);
-
-  // Get the distance from the center of a square width sidelength 2 * radius
-  // to the edge of the square in direction (x, y). The origin of the
-  // coordinate system lies in the center of the square.
-  // param: x - x coordinate of the direction
-  //        y - y coordinate oif the direction
-  //        radius - Half sidelength of the square / radius of the inscribed
-  //          circle of the square
-  static float getMaxLength(int x, int y, int radius);
 };
 
 #endif  // SRC_FILTERS_FILTER_H_
