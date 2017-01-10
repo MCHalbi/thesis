@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   int height = image.height();
   CImg<unsigned char> output(width, height, 1, 3);
 
-  for (float radius = 1; radius <= 2; radius += 0.1) {
+  for (float radius = 0.1; radius <= 2; radius += 0.1) {
     Filter::rectilinearToFisheye(image, &output, radius);
 
     string radiusStr = to_string(radius);

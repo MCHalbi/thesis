@@ -77,7 +77,11 @@ class Filter {
 
   // Correct image distortion caused by fisheye effect
   static void fisheyeToRectilinear(const CImg<unsigned char>& input,
-    CImg<unsigned char>* output, float strength, float zoom);
+    CImg<unsigned char>* output, float radius);
+
+  // TODO: COMMENT
+  static void radialBlur(const CImg<unsigned char>& input,
+    CImg<unsigned char>* output, const float radius);
 
  private:
   // Get the filter color of a bayer filter at a given position
