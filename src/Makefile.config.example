@@ -7,6 +7,9 @@ BIN_PATH = $(ROOT)bin/
 # Path to the linter
 LINT_PATH = $(ROOT)src/cpplint.py
 
+# Path to the include directory
+INCLUDE_PATH = $(ROOT)src/include/
+
 # Compiler and linker you want to use
 CC = g++
 LD = g++

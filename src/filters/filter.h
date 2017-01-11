@@ -79,7 +79,7 @@ class Filter {
   static void fisheyeToRectilinear(const CImg<unsigned char>& input,
     CImg<unsigned char>* output, float radius);
 
-  // TODO: COMMENT
+  // TODO(halbi): COMMENT
   static void radialBlur(const CImg<unsigned char>& input,
     CImg<unsigned char>* output, const float radius);
 

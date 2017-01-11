@@ -344,8 +344,8 @@ void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       // Calculate normalized coordinates, center of image is (0, 0)
-      float nX = (float) x / halfWidth - 1;
-      float nY = 1 - (float) y / halfHeight;
+      float nX = static_cast<float>(x) / halfWidth - 1;
+      float nY = 1 - static_cast<float>(y) / halfHeight;
 
       // Distance of point (x, y) from center
       float dist = sqrt(nX * nX + nY * nY);
@@ -396,8 +396,8 @@ void Filter::radialBlur(const CImg<unsigned char>& input,
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       // Calculate normalized coordinates, center of image is (0, 0)
-      float nX = (float) x / halfWidth - 1;
-      float nY = 1 - (float) y / halfHeight;
+      float nX = static_cast<float>(x) / halfWidth - 1;
+      float nY = 1 - static_cast<float>(y) / halfHeight;
 
       // Distance of point (x, y) from center
       float dist = sqrt(nX * nX + nY * nY);
@@ -433,8 +433,8 @@ void Filter::radialBlur(const CImg<unsigned char>& input,
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       // Calculate normalized coordinates, center of image is (0, 0)
-      float nX = (float) x / halfWidth - 1;
-      float nY = 1 - (float) y / halfHeight;
+      float nX = static_cast<float>(x) / halfWidth - 1;
+      float nY = 1 - static_cast<float>(y) / halfHeight;
 
       // Distance of point (x, y) from center
       float dist = sqrt(nX * nX + nY * nY);
@@ -452,7 +452,8 @@ void Filter::radialBlur(const CImg<unsigned char>& input,
       int sourceY = ((1 - tY) * halfHeight);
 
       if (!(sourceX < 0 || sourceX >= width ||
-        sourceY < 0 || sourceY >= height) && diffTable(sourceX, sourceY, 0, 0) != 0) {
+        sourceY < 0 || sourceY >= height) &&
+        diffTable(sourceX, sourceY, 0, 0) != 0) {
         (*output)(x, y, 0, 0) = tmp(sourceX, sourceY, 0, 0);
         (*output)(x, y, 0, 1) = tmp(sourceX, sourceY, 0, 1);
         (*output)(x, y, 0, 2) = tmp(sourceX, sourceY, 0, 2);

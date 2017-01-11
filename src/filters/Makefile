@@ -15,7 +15,7 @@ FILES = filter
 LIST = $(addprefix $(BIN_PATH), $(addsuffix Main, $(FILES)))
 
 # Additional include directorys. Whatever you think you need goes here
-INCLUDE = /home/halbritl/Dokumente/thesis/src/include
+INCLUDE = $(INCLUDE_PATH)
 LIBS = -L/usr/X11R6/lib
 
 # Linker flags you want to use go here
