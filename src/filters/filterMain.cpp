@@ -1,4 +1,4 @@
-// Copyright 2016
+// Copyright 2016 - 2017
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
 #include <stdlib.h>
@@ -21,16 +21,21 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  const CImg<unsigned char> image("../../image/original/lena1.png");
+  const CImg<unsigned char> image("../../image/original/flyingThings.ppm");
   int width = image.width();
   int height = image.height();
-  CImg<unsigned char> output(width, height, 1, 3);
+  CImg<unsigned char> output(width, height, 1, 3), tmp(width, height, 1, 3);
+  tmp = image;
 
   for (float radius = 0.1; radius <= 2; radius += 0.1) {
-    Filter::rectilinearToFisheye(image, &output, radius);
+    Filter::rectilinearToFisheye(image, &tmp, radius);
 
     string radiusStr = to_string(radius);
-    output.save(("fisheye_radius_" + radiusStr + ".png").c_str());
+    tmp.save(("fisheye_radius_" + radiusStr + ".png").c_str());
+
+    Filter::fisheyeToRectilinear(tmp, &output, radius);
+
+    output.save(("blur_radius_" + radiusStr + ".png").c_str());
   }
 
   return EXIT_SUCCESS;

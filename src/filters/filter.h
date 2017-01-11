@@ -1,4 +1,4 @@
-// Copyright 2016
+// Copyright 2016 - 2017
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
 #ifndef SRC_FILTERS_FILTER_H_

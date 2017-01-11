@@ -1,4 +1,4 @@
-// Copyright 2016
+// Copyright 2016 - 2017
 // Author: Lukas Halbritter <halbritl@informatik.uni-freiburg.de>
 
 #include <CImg/CImg.h>
@@ -370,9 +370,9 @@ void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
         (*output)(x, y, 0, 1) = input(sourceX, sourceY, 0, 1);
         (*output)(x, y, 0, 2) = input(sourceX, sourceY, 0, 2);
       } else {
-        (*output)(x, y, 0, 0) = 100;
-        (*output)(x, y, 0, 1) = 100;
-        (*output)(x, y, 0, 2) = 100;
+        (*output)(x, y, 0, 0) = 0;
+        (*output)(x, y, 0, 1) = 255;
+        (*output)(x, y, 0, 2) = 0;
       }
     }
   }
@@ -380,18 +380,12 @@ void Filter::rectilinearToFisheye(const CImg<unsigned char>& input,
 
 // ____________________________________________________________________________
 void Filter::fisheyeToRectilinear(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, float radius) {}
-
-void Filter::radialBlur(const CImg<unsigned char>& input,
-  CImg<unsigned char>* output, const float radius) {
+  CImg<unsigned char>* output, float radius) {
   int width = input.width();
   int height= input.height();
 
   int halfWidth = width / 2;
   int halfHeight= height / 2;
-
-  CImg<float> diffTable(width, height, 1, 1);
-  CImg<unsigned char> tmp(width, height, 1, 3);
 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -399,16 +393,14 @@ void Filter::radialBlur(const CImg<unsigned char>& input,
       float nX = static_cast<float>(x) / halfWidth - 1;
       float nY = 1 - static_cast<float>(y) / halfHeight;
 
-      // Distance of point (x, y) from center
-      float dist = sqrt(nX * nX + nY * nY);
-
-      // Calculate angle (polar coordinates)
+      // Calculate angle of line through origin and (x, y)
       float theta = atan2(nY, nX);
 
-      float diff = radius - sqrt(radius * radius - dist * dist);
-
       // Calculate new distance
-      dist += diff;
+      float c = cos(theta);
+      float c2 = c * c;
+      float dist = (c2 * (- radius) + sqrt(c2 * c2 * radius * radius +
+        2 * c2 * c * radius * nX - c2 * nX * nX) + c * nX) / (2 * c2);
 
       // Translate back to cartesian coordinates
       float tX = dist * cos(theta);
@@ -418,53 +410,20 @@ void Filter::radialBlur(const CImg<unsigned char>& input,
 
       if (!(sourceX < 0 || sourceX >= width ||
         sourceY < 0 || sourceY >= height)) {
-        tmp(x, y, 0, 0) = input(sourceX, sourceY, 0, 0);
-        tmp(x, y, 0, 1) = input(sourceX, sourceY, 0, 1);
-        tmp(x, y, 0, 2) = input(sourceX, sourceY, 0, 2);
-        diffTable(sourceX, sourceY, 0, 0) = diff;
+        (*output)(x, y, 0, 0) = input(sourceX, sourceY, 0, 0);
+        (*output)(x, y, 0, 1) = input(sourceX, sourceY, 0, 1);
+        (*output)(x, y, 0, 2) = input(sourceX, sourceY, 0, 2);
       } else {
-        tmp(x, y, 0, 0) = 0;
-        tmp(x, y, 0, 1) = 0;
-        tmp(x, y, 0, 2) = 0;
-      }
-    }
-  }
-
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      // Calculate normalized coordinates, center of image is (0, 0)
-      float nX = static_cast<float>(x) / halfWidth - 1;
-      float nY = 1 - static_cast<float>(y) / halfHeight;
-
-      // Distance of point (x, y) from center
-      float dist = sqrt(nX * nX + nY * nY);
-
-      // Calculate angle (polar coordinates)
-      float theta = atan2(nY, nX);
-
-      // Calculate new distance
-      dist -= diffTable(x, y, 0, 0);
-
-      // Translate back to cartesian coordinates
-      float tX = dist * cos(theta);
-      float tY = dist * sin(theta);
-      int sourceX = ((tX + 1) * halfWidth);
-      int sourceY = ((1 - tY) * halfHeight);
-
-      if (!(sourceX < 0 || sourceX >= width ||
-        sourceY < 0 || sourceY >= height) &&
-        diffTable(sourceX, sourceY, 0, 0) != 0) {
-        (*output)(x, y, 0, 0) = tmp(sourceX, sourceY, 0, 0);
-        (*output)(x, y, 0, 1) = tmp(sourceX, sourceY, 0, 1);
-        (*output)(x, y, 0, 2) = tmp(sourceX, sourceY, 0, 2);
-      } else {
-        (*output)(x, y, 0, 0) = 0;
+        (*output)(x, y, 0, 0) = 255;
         (*output)(x, y, 0, 1) = 0;
         (*output)(x, y, 0, 2) = 0;
       }
     }
   }
 }
+
+void Filter::radialBlur(const CImg<unsigned char>& input,
+  CImg<unsigned char>* output, const float radius) {}
 
 // ____________________________________________________________________________
 Filter::Color Filter::getBayerPixelColor(const int x, const int y) {
